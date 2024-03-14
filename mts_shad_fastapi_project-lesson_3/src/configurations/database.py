@@ -3,9 +3,8 @@ from typing import AsyncGenerator, Callable, Optional
 
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 
-from models.base import BaseModel
-from models.books import Book  # noqa F401
-
+from src.models.base import BaseModel
+from src.models.books import Book  # noqa F401
 from .settings import settings
 
 logger = logging.getLogger("__name__")
@@ -64,7 +63,6 @@ async def create_db_and_tables():
 
 async def delete_db_and_tables():
     global __async_engine
-
     if __async_engine is None:
         raise ValueError({"message": "You must call global_init() before using this method."})
 

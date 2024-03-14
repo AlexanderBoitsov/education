@@ -8,13 +8,12 @@ import asyncio
 import httpx
 import pytest
 import pytest_asyncio
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine, async_scoped_session, AsyncSession, async_scoped_session
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
+from src.configurations.database import global_init
 from src.configurations.settings import settings
-from src.models import books  # noqa
+from src.models import sellers  # noqa
 from src.models.base import BaseModel
-from src.models.books import Book  # noqa F401
-
 
 
 # Переопределяем движок для запуска тестов и подключаем его к тестовой базе.
@@ -22,13 +21,25 @@ from src.models.books import Book  # noqa F401
 # Фикстуры тестов их не зачистят.
 # и обеспечивает чистую среду для запуска тестов. В ней не будет лишних записей.
 async_test_engine = create_async_engine(
-    "postgresql+asyncpg://postgres:12345678@localhost:5432",
+    settings.database_test_url,
     echo=True,
 )
 
 # Создаем фабрику сессий для тестового движка.
 async_test_session = async_sessionmaker(async_test_engine, expire_on_commit=False, autoflush=False)
 
+
+@pytest_asyncio.fixture()
+async def seller_id(db_session):
+    seller = sellers.Seller(
+        first_name="Alexander",
+        last_name="Boytsov",
+        email="AlexanderBoytsov@mail.ru",
+        password="00000000"
+    )
+    db_session.add(seller)
+    await db_session.flush()
+    yield seller.id
 
 # Получаем цикл событий для асинхорнного потока выполнения задач.
 @pytest_asyncio.fixture(scope="session")
@@ -82,6 +93,7 @@ def test_app(override_get_async_session):
 # создаем асинхронного клиента для ручек
 @pytest_asyncio.fixture(scope="function")
 async def async_client(test_app):
+    global_init()
     async with httpx.AsyncClient(app=test_app, base_url="http://127.0.0.1:8000") as test_client:
         yield test_client
 
