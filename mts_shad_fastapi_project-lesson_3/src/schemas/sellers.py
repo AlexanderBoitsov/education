@@ -1,7 +1,8 @@
 from pydantic import BaseModel, Field, field_validator
 from pydantic_core import PydanticCustomError
 
-from schemas.books import BaseBook
+from src.schemas.books import ReturnedBook
+
 
 __all__ = ["IncomingSeller", "ReturnedAllSellers", "ReturnedSeller", "ReturnedSellerAndBooks"]
 
@@ -35,7 +36,7 @@ class ReturnedAllSellers(BaseModel):
         
 
 class ReturnedSellerAndBooks(ReturnedSeller):
-    books: list[BaseBook]
+    books: list[ReturnedBook]
 
 
 

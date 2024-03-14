@@ -5,9 +5,10 @@ from icecream import ic
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from configurations.database import get_async_session
-from models.sellers import Seller
-from schemas.sellers import IncomingSeller, ReturnedAllSellers, ReturnedSeller, ReturnedSellerAndBooks
+from src.configurations.database import get_async_session
+from src.models.sellers import Seller
+from src.models.books import Book
+from src.schemas.sellers import IncomingSeller, ReturnedAllSellers, ReturnedSeller, ReturnedSellerAndBooks
 
 #import eventlet
 #from eventlet import monkey_patch
@@ -46,18 +47,21 @@ async def get_all_sellers(session: DBSession):
 
 # Ручка для получения данных о продавце
 @sellers_router.get("/{seller_id}", response_model=ReturnedSellerAndBooks)
-async def get_seller(seller_id: int, session: DBSession):    
-    #db_parent = session.execute(Seller)
-    #parent_data = ReturnedSellerAndBooks.construct(db_parent)
-    res = await session.get(Seller, seller_id)    
-
-    #res = await session.get(Seller, seller_id)
-    return res
-
+async def get_seller(seller_id: int, session: DBSession):
+    seller_query = await session.get(Seller, seller_id)    
+    if not seller_query:
+        return Response(status_code=status.HTTP_404_NOT_FOUND)
+    seller_books_query =  await session.execute(select(Book).where(Book.seller_id == seller_id))
+    result = {
+        'id': seller_query.id,
+        'first_name': seller_query.first_name,
+        'last_name': seller_query.last_name,
+        'email': seller_query.email,
+        'books':  seller_books_query.scalars().all()
+    }
+    return result
          
-    
-      
-     
+            
 
 # Ручка для удаления данных о продавце
 @sellers_router.delete("/{seller_id}")

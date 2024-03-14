@@ -17,9 +17,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     # for PostgreSQL
-    db_host: str = 'postgresql+asyncpg://postgres:12345678@localhost:5432'
-    db_name: str = 'postgres'
-    db_test_name: str = 'postgres'
+    db_host: str 
+    db_name: str 
+    db_test_name: str = 'fastapi_project_test_db'
     max_connection_count: int = 10
 
     @property
